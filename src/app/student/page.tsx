@@ -1,8 +1,14 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
 import Header from "@/components/common/Header";
 import StudentSidebar from "@/components/common/StudentSidebar";
+import TaskUploadModal from "@/components/student/TaskUploadModal";
+import TaskPreviewModal from "@/components/student/TaskPreviewModal";
 
 export default function StudentHome() {
+  const [openUpload, setOpenUpload] = useState(false);
+  const [openDetail, setOpenDetail] = useState(false);
+
   return (
     <div className="min-h-dvh bg-slate-50">
       <Header />
@@ -11,14 +17,21 @@ export default function StudentHome() {
         <StudentSidebar />
 
         <main className="p-6">
-          <div className="h-[calc(100dvh-6rem)] grid place-items-center">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setOpenUpload(true)}
+              className="mb-4 rounded-lg bg-teal-600 px-4 py-2 text-white hover:bg-teal-700"
+            >
+              Subir tarea
+            </button>
+          </div>
+
+          <div className="h-[calc(100dvh-9rem)] grid place-items-center">
             <div className="text-center">
-              <Image src="/img/gralmag.svg"
-                alt="Ilustración: esperando"
-                width={420}           
-                height={300}
-                className="mx-auto h-auto w-[360px] md:w-[420px] max-w-full"
-                priority
+              <img
+                src="/img/gralmag.svg"  /* no puedo visualizar mi imagen :C */
+                alt="Esperando"
+                className="mx-auto w-[360px] md:w-[420px] h-auto"
               />
               <p className="mt-4 text-slate-600">
                 Presione la unidad y la tareas que quiera evaluar
@@ -27,6 +40,19 @@ export default function StudentHome() {
           </div>
         </main>
       </div>
+
+      {/* subir */}
+      <TaskUploadModal
+        open={openUpload}
+        onClose={() => setOpenUpload(false)}
+        onPreview={() => {
+          setOpenUpload(false);
+          setOpenDetail(true);
+        }}
+      />
+
+      {/* detalle */}
+      <TaskPreviewModal open={openDetail} onClose={() => setOpenDetail(false)} />
     </div>
   );
 }

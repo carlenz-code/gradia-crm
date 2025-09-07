@@ -24,7 +24,7 @@ export default function Header() {
             <div className="text-xs opacity-90">Universidad Peruana Unión</div>
           </div>
           <div className="relative w-9 h-9">
-            <Image src="userss.png" alt="Avatar" fill className="rounded-full ring-2 ring-white/50 object-cover" />
+            <Image src="/avatar.jpg" alt="Avatar" fill className="rounded-full ring-2 ring-white/50 object-cover" />
           </div>
         </div>
       </div>
