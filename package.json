@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "framer-motion": "^12.23.12",
+    "iconsax-react": "^0.0.8",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
     "react": "19.1.0",

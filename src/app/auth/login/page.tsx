@@ -32,13 +32,13 @@ const LoginPage = () => {
     {
       id: '1',
       name: 'John peter',
-      avatar: '/img/persona1.png',
+      avatar: '/img-login/persona1.png',
       lastActive: 'Active 1 days ago'
     },
     {
       id: '2',
       name: 'Alina shmen',
-      avatar: '/img/persona2.png',
+      avatar: '/img-login/persona2.png',
       lastActive: 'Active 4 days ago'
     }
   ]);
@@ -107,7 +107,7 @@ const LoginPage = () => {
       {/* Logo en la esquina superior izquierda */}
       <div className="absolute top-2 sm:top-4 left-2 sm:left-4 w-20 sm:w-28 z-20">
         <Image
-          src="/img/logo.png"
+          src="/img-login/logo.png"
           alt="GradIA logo with a graduation cap and AI letters"
           width={112}
           height={48}
@@ -135,7 +135,7 @@ const LoginPage = () => {
             {/* Ilustración del cohete */}
             <div className="hidden sm:block">
               <Image
-                src="/img/icon.png"
+                src="/img-login/icon.png"
                 alt="Illustration of a person sitting on an orange rocket with clouds around"
                 width={240}
                 height={200}
