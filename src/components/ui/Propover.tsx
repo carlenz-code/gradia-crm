@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { popoverVariants } from '@/lib/animations';
+import { motion, AnimatePresence, LayoutGroup } from '@/lib/utils/motion'; // ✅
+
+import { popoverVariants } from '@/lib/utils/animations';
 
 type Props = {
   isOpen: boolean;
@@ -34,14 +35,16 @@ export default function Popover({ isOpen, onClose, align = 'right', className, c
       {isOpen && (
         <motion.div
           ref={ref}
-          role="menu"
+          // ❌ NO pongas role aquí; el contenido interior define su semántica (menu/list/dialog…)
           initial="hidden"
           animate="visible"
           exit="exit"
-          variants={popoverVariants}           // ✅ ahora coincide con Variants
+          variants={popoverVariants}
           style={{ transformOrigin: align === 'right' ? 'top right' : 'top left' }}
           className={[
-            'absolute top-12 w-56 overflow-hidden rounded-2xl border bg-white shadow-lg',
+            'absolute top-12 w-56 overflow-hidden rounded-2xl border shadow-lg z-50',
+            // tokens para light/dark:
+            'bg-[var(--card)] border-[var(--border)] text-[var(--fg)]',
             align === 'right' ? 'right-0' : 'left-0',
             className ?? '',
           ].join(' ')}

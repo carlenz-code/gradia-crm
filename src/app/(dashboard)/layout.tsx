@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import Header from '@/components/common/Header';
-import SubHeaderTabs from '@/components/common/SubHeaderTabs';
+import Header from '@/components/common/Header/Header';
 import { getCurrentUser } from '@/lib/auth';
+import { UserProvider } from '../../components/providers/UserProvider';
+import Container from '@/components/common/Container';
 import '@/app/globals.css';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
@@ -9,15 +10,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   const tabs = [
     { value: 'general', label: 'General' },
-    { value: 'otro', label: 'Otro' },
+    { value: 'vista', label: 'Vista ampliada' }, // ✅ nuevo tab
   ];
 
   return (
-    <div className="min-h-dvh bg-white">
-      <Header user={user} />
-      <SubHeaderTabs items={tabs} />
-      <main className="mx-auto max-w-[1400px] px-4 md:px-8 xl:px-[120px] py-6">
-        {children}
+    <div className="min-h-dvh bg-[var(--bg)] text-[var(--fg)]">
+      <Header user={user} tabs={tabs} />
+      <main>
+        <Container className="py-6">
+          <UserProvider value={user}>{children}</UserProvider>
+        </Container>
       </main>
     </div>
   );

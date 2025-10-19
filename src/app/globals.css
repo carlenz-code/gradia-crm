@@ -1,5 +1,93 @@
 @import "tailwindcss";
 
+
+/* Variant dark por clase (v4) */
+
+/* ===== Dark mode por clase (v4) =====
+   Activa las utilidades `dark:` cuando <html class="dark"> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== Tokens de color (semánticos) =====
+   Mapea la marca y la UI que ya tienes:
+   - brand: indigo (logo/acciones)
+   - fg/muted: textos
+   - card/border: superficies y bordes
+   - icon: color base para iconsax
+   - link: enlaces (azul)
+   - section: fondos suaves tipo "bg-gray-50"
+   - accent-* : para métricas (amber/green/red)
+*/
+:root {
+
+   --header-h: 56px;   /* h-14 en móvil */
+  --rail-gap: 16px;   /* separación visual */
+
+  /* Base */
+  --bg:       #ffffff;   /* fondo general */
+  --fg:       #111827;   /* texto principal (gray-900) */
+  --muted:    #6b7280;   /* texto secundario (gray-500) */
+
+  /* Superficies y bordes */
+  --card:     #ffffff;   /* tarjetas, popovers, header sólido */
+  --border:   #e5e7eb;   /* bordes (gray-200) */
+  --section:  #f9fafb;   /* secciones suaves (gray-50) */
+
+  /* Marca e iconos */
+  --brand:    #6366f1;   /* indigo-500/600 aprox. */
+  --icon:     #111827;   /* gris oscuro para íconos */
+
+  /* Links */
+  --link:     #2563eb;   /* blue-600 */
+  --link-hover: #1d4ed8; /* blue-700 */
+
+  /* Anillos/foco */
+  --ring:     #6366f1;   /* usa ring-[var(--ring)] si quieres */
+
+  /* Métricas (tus cards de contadores) */
+  --accent-amber: #f59e0b; /* amber-500 */
+  --accent-green: #16a34a; /* green-600 */
+  --accent-red:   #ef4444; /* red-500 */
+
+  /* Subrayados / separadores */
+  --underline: #000000;  /* underline tabs en claro */
+}
+
+.dark {
+  /* Base oscura */
+  --bg:       #0b0f19;   /* fondo general oscuro (near-neutral-950) */
+  --fg:       #e5e7eb;   /* texto principal claro */
+  --muted:    #9ca3af;   /* texto secundario claro */
+
+  /* Superficies y bordes en dark */
+  --card:     #0f1526;   /* panel oscuro (ligeramente azulado) */
+  --border:   #1f2937;   /* gray-800 */
+  --section:  #0f1526;   /* mismo que card para franjas suaves */
+
+  /* Marca e iconos */
+  --brand:    #818cf8;   /* indigo claro para contraste */
+  --icon:     #e5e7eb;   /* íconos claros */
+
+  /* Links */
+  --link:       #60a5fa; /* blue-400 */
+  --link-hover: #3b82f6; /* blue-500 */
+
+  --ring:     #818cf8;
+
+  /* Métricas (puedes mantener mismas) */
+  --accent-amber: #fbbf24; /* un poco más claro en dark opcional */
+  --accent-green: #22c55e;
+  --accent-red:   #f87171;
+
+  /* Subrayados / separadores */
+  --underline: #ffffff;
+}
+
+/* Sugerencia: mejora nativa de formularios, scrollbars, etc. según tema */
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+
+/* -------------------------- */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -19,8 +107,28 @@
   }
 }
 
+@media (min-width: 768px) {
+  :root { --header-h: 64px; } /* h-16 en md+ */
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.menu-row { @apply flex items-center gap-3 px-3.5 py-2 text-sm  hover:bg-[var(--section)] text-[var(--fg)]; }
+.menu-icon { @apply inline-grid place-items-center w-5 h-5 shrink-0; }
+.menu-text { @apply truncate; }
+
+:root {
+  --header-h: 56px;      /* altura header en móvil */
+  --rail-gap: 8px;       /* pequeño margen bajo el header */
+}
+@media (min-width: 768px) {
+  :root { --header-h: 64px; }  /* si tu header en desktop es 64px */
+}
+
+
+
