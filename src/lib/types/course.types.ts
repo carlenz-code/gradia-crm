@@ -1,3 +1,8 @@
+// src/lib/types/course.types.ts
+
+// ===== Rol de usuario (para distinguir vistas) =====
+export type Role = 'STUDENT' | 'TEACHER';
+
 export type Course = {
   id: string;
   title: string;
@@ -19,7 +24,7 @@ export type Task = {
   title: string;
   dueAt: string; // ISO
   project?: string;
-  grade?: string | null; // 👈 agregado “| null”
+  grade?: string | null;
 };
 
 export type Material = {
