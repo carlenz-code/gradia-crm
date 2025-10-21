@@ -1,101 +1,119 @@
+/* ===== Tailwind ===== */
 @import "tailwindcss";
 
-/* Dark mode por clase */
+/* ===== Dark mode por clase ===== */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ================= TOKENS ================= */
+/* ===== Tokens (light) ===== */
 :root {
-  /* Layout */
+  /* tamaños globales usados en el layout */
   --header-h: 56px;
   --rail-gap: 16px;
 
-  /* Base (LIGHT) */
+  /* colores semánticos */
   --bg: #ffffff;
   --fg: #0f172a;
   --muted: #6b7280;
 
-  /* Superficies */
-  --card: #ffffff;        /* ⬅ opaco */
-  --section: #f7f8fb;
-  --border: #e5e7eb;
+  --card: #ffffff;     /* superficies (cards/popovers) */
+  --section: #f7f8fb;  /* secciones suaves */
+  --border: #e5e7eb;   /* bordes */
 
-  /* Marca */
-  --brand: #8b8cfb;
-  --brand-rgb: 139 140 251; /* para rgb(var(--brand-rgb) / α) */
+  --brand: #8b8cfb;     /* morado marca */
+  --brand-rgb: 139 140 251; /* 👈 para radial-glow (R G B) */
 
-  /* Iconos y links */
-  --icon: #111827;        /* ⬅ negro para header, chips, etc. */
+  --icon: #111827;
   --link: #2563eb;
   --link-hover: #1d4ed8;
 
-  /* Focus ring */
-  --ring: #8b8cfb;
-
-  /* Acentos */
-  --accent-amber: #f59e0b;
-  --accent-green: #16a34a;
-  --accent-red: #ef4444;
-
-  /* Subrayado (tabs) */
+  --ring: #6366f1;
   --underline: #000000;
+
+   /* === Accents para métricas / iconos === */
+  --accent-amber: #f59e0b; /* amarillo */
+  --accent-red:   #ef4444; /* rojo */
+  --accent-green: #16a34a; /* opcional, por si lo usas */
 }
 
+/* ===== Tokens (dark) ===== */
 .dark {
-  /* Base (DARK) */
   --bg: #0b0f19;
   --fg: #e5e7eb;
   --muted: #9ca3af;
 
-  /* Superficies */
-  --card: #0f1117;        /* ⬅ opaco */
+  --card: #0f1117;
   --section: #0b0d13;
   --border: #20232b;
 
-  /* Marca */
   --brand: #8b8cfb;
   --brand-rgb: 139 140 251;
 
-  /* Iconos y links */
-  --icon: #e5e7eb;        /* iconos claros */
+  --icon: #e5e7eb;
   --link: #60a5fa;
   --link-hover: #3b82f6;
-
-  --ring: #8b8cfb;
-
-  /* Acentos */
-  --accent-amber: #fbbf24;
-  --accent-green: #22c55e;
-  --accent-red: #f87171;
-
-  /* Subrayado (tabs) */
+  --ring: #818cf8;
   --underline: #ffffff;
 }
 
-/* Importante: usa SIEMPRE bg/fg (no background/foreground) */
+/* Preferencias de esquema */
 :root { color-scheme: light; }
 .dark { color-scheme: dark; }
 
-/* ================= BASE ================= */
-html, body {
-  background: var(--bg);
-  color: var(--fg);
-}
-
-/* Opcional: helpers para menús */
-.menu-row  { @apply flex items-center gap-3 px-3.5 py-2 text-sm hover:bg-[var(--section)] text-[var(--fg)]; }
-.menu-icon { @apply inline-grid place-items-center w-5 h-5 shrink-0 text-[var(--icon)]; }
-.menu-text { @apply truncate; }
-
-/* Header en md+ */
-@media (min-width: 768px) {
-  :root { --header-h: 64px; }
-}
-
-/* Evita scroll horizontal por blurs/posicionamientos absolutos */
+/* ===== Resets de overflow: evita scroll horizontal sin aplastar contenido ===== */
 html, body { overflow-x: clip; }
 @supports not (overflow-x: clip) {
   html, body { overflow-x: hidden; }
 }
 
-/* Evita que textos/hijos flex empujen el ancho */
-* { min-width: 0; }
+/* ✖️ NO forces font-family aquí; respeta la tipografía que cargues con next/font */
+/* body { font-family: Arial, Helvetica, sans-serif; }  <-- ELIMINAR */
+
+/* ⚠️ No uses * { min-width: 0 } global: aplasta badges/botones.
+   Para truncados, usa la clase utilitaria de Tailwind 'min-w-0' solo en contenedores necesarios. */
+
+/* ===== Utilidades globales (puedes usarlas en cualquier componente) ===== */
+
+/* Badge redondo/ovalo con numerito (notificaciones, contadores) */
+.badge {
+  display: inline-grid;
+  place-items: center;
+  height: 20px;
+  min-width: 20px;              /* evita que se “adelgace” */
+  padding: 0 6px;               /* ovalo cuando hay >1 dígito */
+  border-radius: 9999px;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  background: var(--brand);
+  color: #fff;
+  flex-shrink: 0;               /* 👈 importantísimo en filas flex */
+}
+
+/* Botón de ícono consistente (cuadrado o redondo usando el modificador) */
+.icon-btn {
+  display: grid;
+  place-items: center;
+  height: 36px; width: 36px;
+  min-width: 36px;              /* 👈 que no se aplane en flex */
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.icon-btn--round { border-radius: 9999px; }
+
+/* Chips simples (útil para la extensión del archivo) */
+.chip {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+}
+
+/* Medias responsivas de header si las usas */
+@media (min-width: 768px) {
+  :root { --header-h: 64px; }
+}
