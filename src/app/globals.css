@@ -38,8 +38,11 @@
 
   /* Subrayado (tabs) */
   --underline: #000000;
-}
 
+   --input: #f7f8fb;        /* fondo de inputs (light) */
+  --accent: #8b8cfb;;       /* color principal de CTA (light) */
+}
+  
 .dark {
   /* Base (DARK) */
   --bg: #0b0f19;
