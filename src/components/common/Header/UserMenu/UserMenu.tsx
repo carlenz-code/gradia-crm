@@ -1,10 +1,11 @@
 'use client';
-
 import Link from 'next/link';
 import { useCallback, useId, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Popover from '@/components/ui/Propover';
 import ThemeToggleMenuItem from '@/components/common/Header/UserMenu/ThemeToggleMenuItem';
 import type { MinimalUser } from '@/lib/types';
+import { useAuthSim } from '@/context/AuthSimProvider';
 import {
   TagUser, Book, Award, AlignBottom,
   MessageQuestion, Setting2, Logout, Briefcase
@@ -18,20 +19,12 @@ export default function UserMenu({ user }: Props) {
   const isTeacher = user.role === 'TEACHER';
   const toggle = useCallback(() => setOpen(v => !v), []);
   const close  = useCallback(() => setOpen(false), []);
+  const router = useRouter();
+  const { logout } = useAuthSim();
 
   return (
     <div className="relative flex items-center gap-2">
-      {/* Botón de apertura (mantenemos nombre/org al lado del avatar superior del header) */}
-      <button
-        id={btnId}
-        type="button"
-        onClick={toggle}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={`${btnId}-menu`}
-        className="flex items-center gap-2"
-      >
-        {/* circulito de rol también puede usarse aquí si quieres quitar el avatar del header */}
+      <button id={btnId} type="button" onClick={toggle} className="flex items-center gap-2">
         <span className="inline-grid place-items-center h-9 w-9 rounded-full bg-[var(--brand)] text-white text-sm">
           {user.name.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase()}
         </span>
@@ -42,66 +35,36 @@ export default function UserMenu({ user }: Props) {
       </button>
 
       <Popover isOpen={open} onClose={close} align="right" className="mt-3">
-        {/* === Cabecera compacta con círculo + texto del rol === */}
-        <MenuHeader
-          roleLabel={isTeacher ? 'Docente' : 'Estudiante'}
-          // círculo 24px (h-6 w-6) y el icono 14px; el texto va a 14px para que se “vea” del mismo tamaño
-          iconName={isTeacher ? 'teacher' : 'student'}
-        />
+        <MenuHeader roleLabel={isTeacher ? 'Docente' : 'Estudiante'} iconName={isTeacher ? 'teacher' : 'student'} />
 
-        {/* === Items === */}
         <ul id={`${btnId}-menu`} role="menu" aria-labelledby={btnId} className="pb-2">
-          <li role="none">
-            <MenuLink href="/profile" onSelect={close} icon={<TagUser size={18} color="var(--icon)" />}>
-              Perfil
-            </MenuLink>
-          </li>
-
+          <li><MenuLink href="/profile" onSelect={close} icon={<TagUser size={18} color="var(--icon)" />}>Perfil</MenuLink></li>
           {isTeacher ? (
-            <li role="none">
-              <MenuLink href="/courses" onSelect={close} icon={<Book size={18} color="var(--icon)" />}>
-                Mis cursos
-              </MenuLink>
-            </li>
+            <li><MenuLink href="/courses" onSelect={close} icon={<Book size={18} color="var(--icon)" />}>Mis cursos</MenuLink></li>
           ) : (
             <>
-              <li role="none">
-                <MenuLink href="/certificates" onSelect={close} icon={<Award size={18} color="var(--icon)" />}>
-                  Certificados
-                </MenuLink>
-              </li>
-              <li role="none">
-                <MenuLink href="/grades" onSelect={close} icon={<AlignBottom size={18} color="var(--icon)" />}>
-                  Calificaciones
-                </MenuLink>
-              </li>
+              <li><MenuLink href="/certificates" onSelect={close} icon={<Award size={18} color="var(--icon)" />}>Certificados</MenuLink></li>
+              <li><MenuLink href="/grades" onSelect={close} icon={<AlignBottom size={18} color="var(--icon)" />}>Calificaciones</MenuLink></li>
             </>
           )}
 
-          <li role="none"><MenuDivider /></li>
+          <li><MenuDivider /></li>
 
-          <li role="none">
-            <MenuLink href="/help" onSelect={close} icon={<MessageQuestion size={18} color="var(--icon)" />}>
-              Centro de ayuda
-            </MenuLink>
-          </li>
-          <li role="none">
-            <MenuLink href="/settings" onSelect={close} icon={<Setting2 size={18} color="var(--icon)" />}>
-              Ajustes
-            </MenuLink>
-          </li>
+          <li><MenuLink href="/help" onSelect={close} icon={<MessageQuestion size={18} color="var(--icon)" />}>Centro de ayuda</MenuLink></li>
+          <li><MenuLink href="/settings" onSelect={close} icon={<Setting2 size={18} color="var(--icon)" />}>Ajustes</MenuLink></li>
+          <li><ThemeToggleMenuItem className="menu-row" /></li>
 
-          {/* Toggle modo oscuro, alineado a la misma “fila de menú” */}
-          <li role="none">
-            <ThemeToggleMenuItem className="menu-row" />
-          </li>
+          <li><MenuDivider /></li>
 
-          <li role="none"><MenuDivider /></li>
-
-          <li role="none">
-            <MenuLink href="/api/auth/signout" onSelect={close} icon={<Logout size={18} color="var(--accent-red)" className='text-[--accent-red]' />}>
-              Cerrar sesión
-            </MenuLink>
+          <li>
+            <button
+              role="menuitem"
+              onClick={() => { close(); logout(); router.replace('/auth/login'); }}
+              className="menu-row w-full text-left"
+            >
+              <span className="menu-icon"><Logout size={18} color="var(--accent-red)" className="text-[--accent-red]" /></span>
+              <span className="menu-text">Cerrar sesión</span>
+            </button>
           </li>
         </ul>
       </Popover>
@@ -109,43 +72,25 @@ export default function UserMenu({ user }: Props) {
   );
 }
 
-/* ───────── Header compacto ───────── */
 function MenuHeader({ roleLabel, iconName }:{ roleLabel: string; iconName: 'student'|'teacher' }) {
-  const icon =
-    iconName === 'student'
-      ? <Book size={14} color="var(--brand)" />
-      : <Briefcase size={14} color="var(--brand)" />;
+  const icon = iconName === 'student'
+    ? <Book size={14} color="var(--brand)" />
+    : <Briefcase size={14} color="var(--brand)" />;
 
   return (
     <div className="px-3.5 pt-3 pb-2">
       <div className="flex items-center gap-2.5 rounded-t-xl border border-[var(--border)]
                       bg-[var(--section)] px-2.5 py-1.5">
-        {/* círculo pequeño con el icono dentro */}
-        <span className="inline-grid place-items-center h-6 w-6 rounded-full
-                         bg-[var(--card)] border border-[var(--border)]">
+        <span className="inline-grid place-items-center h-6 w-6 rounded-full bg-[var(--card)] border border-[var(--border)]">
           {icon}
         </span>
-        {/* texto del rol, mismo “tamaño visual” que el icono */}
-        <span className="text-[14px] leading-none font-medium text-[var(--fg)]">
-          {roleLabel}
-        </span>
+        <span className="text-[14px] leading-none font-medium text-[var(--fg)]">{roleLabel}</span>
       </div>
     </div>
   );
 }
 
-/* ───────── Items ───────── */
-function MenuLink({
-  href,
-  icon,
-  children,
-  onSelect,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  onSelect?: () => void;
-}) {
+function MenuLink({ href, icon, children, onSelect }: { href: string; icon: React.ReactNode; children: React.ReactNode; onSelect?: () => void; }) {
   return (
     <Link href={href} role="menuitem" onClick={onSelect} className="menu-row">
       <span className="menu-icon">{icon}</span>

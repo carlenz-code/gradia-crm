@@ -17,9 +17,16 @@ type Props = { user: MinimalUser; tabs?: TabItem[]; onToggleSidebar?: () => void
 export default function Header({ user, tabs = [], onToggleSidebar }: Props) {
   return (
     <header
-      className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 dark:bg-neutral-900/80 backdrop-blur overflow-visible"
+      className="
+    sticky top-0 z-50
+    border-b border-[var(--border)]
+    bg-[var(--card)]/90 dark:bg-[var(--section)]/80
+    backdrop-blur
+    overflow-visible
+  "
       style={{ transform: 'none' }}
     >
+
       <div className="overflow-visible" style={{ transform: 'none' }}>
         <Container className="flex h-14 md:h-16 items-center justify-between gap-4 overflow-visible">
           {/* IZQ */}
@@ -50,7 +57,7 @@ export default function Header({ user, tabs = [], onToggleSidebar }: Props) {
               <Link href="/settings" aria-label="Ajustes" className="block">
                 <Information size={24} color="var(--icon)" variant="Outline" />
               </Link>
-              <MessagesMenu/>
+              <MessagesMenu />
               <AppsMenu />
               <NotificationsMenu />
             </div>

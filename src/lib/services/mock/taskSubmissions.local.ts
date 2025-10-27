@@ -1,5 +1,11 @@
+// src/lib/services/mock/taskSubmissions.local.ts
+'use client';
+
 import { getStudentsForCourse, type User } from './userDirectory.local';
 
+/* =========================
+   Tipos y utilidades
+   ========================= */
 export type Attach = {
   id: string;
   title: string;
@@ -13,9 +19,9 @@ export type Submission = {
   studentName: string;
   avatarUrl?: string;
   status: 'submitted' | 'missing';
-  submittedAt?: string; // ISO
+  submittedAt?: string;
   attachments?: Attach[];
-  grade?: number; // 0..20
+  grade?: number;
   feedback?: string;
 };
 
@@ -55,7 +61,11 @@ function makeSubmission(user: User): Submission {
   };
 }
 
-/** Crea/rehace la cohorte a partir del directorio de alumnos del curso */
+/* =========================
+   API del mock
+   ========================= */
+
+// crea/rehace la cohorte desde el directorio del curso
 export function seedCohort(taskId: string, courseId: string) {
   const store = read();
   const students = getStudentsForCourse(courseId);
@@ -75,7 +85,49 @@ export function getSubmissions(taskId: string): Submission[] {
 export function setSubmissions(taskId: string, items: Submission[]) {
   const store = read(); store[taskId] = items; write(store);
 }
-export function upsertGrade(taskId: string, submissionId: string, grade?: number, feedback?: string) {
-  const store = read(); const list = store[taskId] ?? []; const i = list.findIndex(s=>s.id===submissionId);
-  if (i<0) return; const updated = { ...list[i], grade, feedback }; list[i]=updated; setSubmissions(taskId, list); return updated;
+
+// para el “auto-seed” del profe: si no hay cohorte, la crea
+export function listForTeacher(taskId: string, courseId: string): Submission[] {
+  const list = getSubmissions(taskId);
+  if (list.length) return list;
+  return seedCohort(taskId, courseId); // ← crea cohort automática
 }
+
+// estudiante envía su entrega
+export async function submitTask(
+  taskId: string,
+  user: { id: string; name: string },
+  files: File[]
+): Promise<Submission> {
+  await new Promise(r => setTimeout(r, 350)); // latencia
+  const items = getSubmissions(taskId);
+  const meIndex = items.findIndex(i => i.studentId === user.id);
+
+  const sub: Submission = {
+    id: crypto.randomUUID(),
+    studentId: user.id,
+    studentName: user.name,
+    status: 'submitted',
+    submittedAt: new Date().toISOString(),
+    attachments: files.map(f => ({ id: crypto.randomUUID(), title: f.name, type: 'document', url: '#' })),
+  };
+
+  if (meIndex >= 0) items[meIndex] = { ...items[meIndex], ...sub };
+  else items.push(sub);
+
+  setSubmissions(taskId, items);
+  return sub;
+}
+
+// docente califica
+export function upsertGrade(taskId: string, submissionId: string, grade?: number, feedback?: string) {
+  const list = getSubmissions(taskId);
+  const i = list.findIndex(s => s.id === submissionId);
+  if (i < 0) return;
+  const updated = { ...list[i], grade, feedback };
+  list[i] = updated;
+  setSubmissions(taskId, list);
+  return updated;
+}
+
+export type { Store };

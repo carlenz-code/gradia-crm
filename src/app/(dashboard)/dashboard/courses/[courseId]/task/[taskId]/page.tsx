@@ -1,18 +1,17 @@
-// app/(dashboard)/dashboard/courses/[courseId]/task/[taskId]/page.tsx
-import { use } from 'react';
-import { getCurrentUser } from '@/lib/auth';
-import TaskRolePanelClient from '@/components/course/task/TaskRolePanelClient';
+// server component (no hooks aquí)
+import TaskRolePanelBridge from '@/components/course/task/TaskRolePanelBridge';
 
 export default function TaskDetailPage({
   params,
-}: { params: Promise<{ courseId: string; taskId: string }> }) {
-  const { courseId, taskId } = use(params);
-  const user = use(getCurrentUser()); // 'STUDENT' | 'TEACHER'
+}: {
+  params: { courseId: string; taskId: string };
+}) {
+  const { courseId, taskId } = params;
 
+  // El rol ya no se lee aquí. Lo toma el bridge cliente via useCurrentUser().
   return (
-    // ❌ sin barra título aquí — el header lo renderiza el client
     <div className="space-y-5">
-      <TaskRolePanelClient role={user.role} courseId={courseId} taskId={taskId} />
+      <TaskRolePanelBridge courseId={courseId} taskId={taskId} />
     </div>
   );
 }

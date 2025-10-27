@@ -1,21 +1,14 @@
-// src/components/course/task/TaskSubmissionBox.tsx
+// src/components/course/task/student/TaskSubmissionBox.tsx
 'use client';
 
 import { useState } from 'react';
 import {
-  DocumentUpload,
-  PlayCircle,
-  Trash,
-  DocumentText,
-  Document,
-  Code,
-  Image as ImageIcon,
-  Music,
-  Folder,
+  DocumentUpload, PlayCircle, Trash, DocumentText, Document, Code, Image as ImageIcon, Music, Folder,
 } from 'iconsax-react';
 import type { TaskSubmission } from '@/lib/types/task.types';
-import { createSubmissionMock } from '@/lib/services/mock/task.mock';
 import { motion, AnimatePresence } from '@/lib/utils/motion';
+import { useCurrentUser } from '@/lib/auth.client';
+import { submitMyTask } from '@/lib/services/mock/gateway.local';
 
 export default function TaskSubmissionBox({
   taskId,
@@ -24,6 +17,7 @@ export default function TaskSubmissionBox({
   taskId: string;
   onSubmitted: (sub: TaskSubmission) => void;
 }) {
+  const user = useCurrentUser();
   const [files, setFiles] = useState<File[]>([]);
   const [hover, setHover] = useState<'file' | 'video' | null>(null);
   const [busy, setBusy] = useState(false);
@@ -50,20 +44,13 @@ export default function TaskSubmissionBox({
     <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
       <div className="text-[13px] font-medium text-[color:var(--muted)] mb-2">Entrega</div>
 
-      {/* Dropzone */}
       <div
         className="rounded-xl border-2 border-dashed border-[var(--border)] p-6 grid place-items-center text-center"
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
       >
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-3"
-        >
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-3">
           <div className="flex items-center justify-center gap-3">
-            {/* Adjuntar archivo */}
             <motion.button
               whileTap={{ scale: 0.96 }}
               onMouseEnter={() => setHover('file')}
@@ -76,7 +63,6 @@ export default function TaskSubmissionBox({
               <DocumentUpload size={20} color="currentColor" />
             </motion.button>
 
-            {/* Adjuntar video */}
             <motion.button
               whileTap={{ scale: 0.96 }}
               onMouseEnter={() => setHover('video')}
@@ -109,7 +95,6 @@ export default function TaskSubmissionBox({
         </motion.div>
       </div>
 
-      {/* Lista de archivos */}
       {!!files.length && (
         <ul className="mt-4 space-y-2">
           {files.map((f, i) => (
@@ -144,16 +129,27 @@ export default function TaskSubmissionBox({
         </ul>
       )}
 
-      {/* Enviar */}
       <div className="mt-4">
         <button
           disabled={!files.length || busy}
           onClick={async () => {
             setBusy(true);
-            const sub = await createSubmissionMock(taskId, files);
+            const sub = await submitMyTask(taskId, { id: user.id, name: user.name }, files);
             setFiles([]);
             setBusy(false);
-            onSubmitted(sub);
+
+            // adapta al tipo TaskSubmission de tu UI
+            const mapped: TaskSubmission = {
+              id: sub.id,
+              studentId: sub.studentId,
+              studentName: sub.studentName,
+              submittedAt: sub.submittedAt ?? new Date().toISOString(),
+              files: (sub.attachments ?? []).map(a => ({ name: a.title, size: 0 })),
+              grade: null,
+              feedback: null,
+              status: 'SUBMITTED',
+            };
+            onSubmitted(mapped);
           }}
           className="w-full h-11 rounded-xl bg-[var(--brand)] text-white font-medium disabled:opacity-50 hover:opacity-95"
         >
@@ -164,13 +160,11 @@ export default function TaskSubmissionBox({
   );
 }
 
-/* ===== helpers ===== */
-
+/* ===== helpers UI ===== */
 function getExt(f: File) {
   const m = /\.(\w+)$/.exec(f.name.toLowerCase());
   return m?.[1] ?? '';
 }
-
 function prettySize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;
@@ -180,34 +174,28 @@ function prettySize(bytes: number) {
   const gb = mb / 1024;
   return `${gb.toFixed(1)} GB`;
 }
-
-function is(exts: string[], f: File) {
-  const e = getExt(f);
-  return exts.includes(e);
-}
-
+function is(exts: string[], f: File) { return exts.includes(getExt(f)); }
 function getIcon(f: File) {
   if (is(['pdf'], f)) return <DocumentText size={18} color="currentColor" />;
-  if (is(['doc', 'docx', 'rtf', 'txt', 'md'], f)) return <Document size={18} color="currentColor" />;
-  if (is(['xls', 'xlsx', 'csv'], f)) return <Document size={18} color="currentColor" />;
-  if (is(['ppt', 'pptx'], f)) return <Document size={18} color="currentColor" />;
-  if (is(['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'], f)) return <ImageIcon size={18} color="currentColor" />;
-  if (is(['mp4', 'mov', 'mkv', 'webm', 'avi'], f)) return <PlayCircle size={18} color="currentColor" />;
-  if (is(['mp3', 'wav', 'ogg', 'm4a'], f)) return <Music size={18} color="currentColor" />;
-  if (is(['zip', 'rar', '7z'], f)) return <Folder size={18} color="currentColor" />;
-  if (is(['py', 'ipynb', 'js', 'ts', 'java', 'cpp', 'c', 'cs', 'rb', 'go'], f)) return <Code size={18} color="currentColor" />;
+  if (is(['doc','docx','rtf','txt','md'], f)) return <Document size={18} color="currentColor" />;
+  if (is(['xls','xlsx','csv'], f)) return <Document size={18} color="currentColor" />;
+  if (is(['ppt','pptx'], f)) return <Document size={18} color="currentColor" />;
+  if (is(['png','jpg','jpeg','webp','gif','svg'], f)) return <ImageIcon size={18} color="currentColor" />;
+  if (is(['mp4','mov','mkv','webm','avi'], f)) return <PlayCircle size={18} color="currentColor" />;
+  if (is(['mp3','wav','ogg','m4a'], f)) return <Music size={18} color="currentColor" />;
+  if (is(['zip','rar','7z'], f)) return <Folder size={18} color="currentColor" />;
+  if (is(['py','ipynb','js','ts','java','cpp','c','cs','rb','go'], f)) return <Code size={18} color="currentColor" />;
   return <Document size={18} color="currentColor" />;
 }
-
 function getIconStyle(f: File) {
   if (is(['pdf'], f)) return { bg: 'bg-rose-500/10', fg: 'text-rose-600' };
-  if (is(['doc', 'docx', 'rtf', 'txt', 'md'], f)) return { bg: 'bg-sky-500/10', fg: 'text-sky-600' };
-  if (is(['xls', 'xlsx', 'csv'], f)) return { bg: 'bg-emerald-500/10', fg: 'text-emerald-600' };
-  if (is(['ppt', 'pptx'], f)) return { bg: 'bg-amber-500/10', fg: 'text-amber-600' };
-  if (is(['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'], f)) return { bg: 'bg-indigo-500/10', fg: 'text-indigo-600' };
-  if (is(['mp4', 'mov', 'mkv', 'webm', 'avi'], f)) return { bg: 'bg-violet-500/10', fg: 'text-violet-600' };
-  if (is(['mp3', 'wav', 'ogg', 'm4a'], f)) return { bg: 'bg-fuchsia-500/10', fg: 'text-fuchsia-600' };
-  if (is(['zip', 'rar', '7z'], f)) return { bg: 'bg-orange-500/10', fg: 'text-orange-600' };
-  if (is(['py', 'ipynb', 'js', 'ts', 'java', 'cpp', 'c', 'cs', 'rb', 'go'], f)) return { bg: 'bg-teal-500/10', fg: 'text-teal-600' };
+  if (is(['doc','docx','rtf','txt','md'], f)) return { bg: 'bg-sky-500/10', fg: 'text-sky-600' };
+  if (is(['xls','xlsx','csv'], f)) return { bg: 'bg-emerald-500/10', fg: 'text-emerald-600' };
+  if (is(['ppt','pptx'], f)) return { bg: 'bg-amber-500/10', fg: 'text-amber-600' };
+  if (is(['png','jpg','jpeg','webp','gif','svg'], f)) return { bg: 'bg-indigo-500/10', fg: 'text-indigo-600' };
+  if (is(['mp4','mov','mkv','webm','avi'], f)) return { bg: 'bg-violet-500/10', fg: 'text-violet-600' };
+  if (is(['mp3','wav','ogg','m4a'], f)) return { bg: 'bg-fuchsia-500/10', fg: 'text-fuchsia-600' };
+  if (is(['zip','rar','7z'], f)) return { bg: 'bg-orange-500/10', fg: 'text-orange-600' };
+  if (is(['py','ipynb','js','ts','java','cpp','c','cs','rb','go'], f)) return { bg: 'bg-teal-500/10', fg: 'text-teal-600' };
   return { bg: 'bg-[var(--brand)]/10', fg: 'text-[var(--brand)]' };
 }

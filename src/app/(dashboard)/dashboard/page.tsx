@@ -1,17 +1,14 @@
-import { getCurrentUser } from '@/lib/auth';
-import TabAnimator from '@/components/Tabs/TabAnimator';
+// src/app/(dashboard)/dashboard/page.tsx
+import { use } from 'react';
+import DashboardPageBridge from './DashboardPageBridge';
 
-export default async function DashboardPage({
+export default function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>; // 👈 cambiar tipo a Promise
+  searchParams: Promise<{ tab?: string }>; // 👈 Promise
 }) {
-  const params = await searchParams; // 👈 resolver la promesa
-  const tab = ['general', 'vista'].includes(params?.tab || '')
-    ? (params!.tab as 'general' | 'vista')
-    : 'general';
+  const sp = use(searchParams);                         // 👈 desenvuelve
+  const tab = sp?.tab === 'vista' ? 'vista' : 'general';
 
-  const user = await getCurrentUser();
-
-  return <TabAnimator tab={tab} user={user} />;
+  return <DashboardPageBridge tab={tab} />;            // 👈 puente cliente
 }

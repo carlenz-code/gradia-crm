@@ -9,6 +9,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import GoogleIcon from '@/components/auth/GoogleIcon';
+import { useAuthSim } from '@/context/AuthSimProvider';
+import { findUserByEmail } from '@/lib/services/mock/userDirectory.local';
 
 type LoginInput = { email: string; password: string };
 const schema = z.object({
@@ -18,18 +20,28 @@ const schema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuthSim();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors } } =
-    useForm<LoginInput>({ resolver: zodResolver(schema), defaultValues: { email: '', password: '' } });
+    useForm<LoginInput>({ resolver: zodResolver(schema) });
 
   async function onSubmit(values: LoginInput) {
     setLoading(true);
+    setErrorMsg(null);
     try {
-      // TODO: integra tu useAuth().login(values)
-      await new Promise(r => setTimeout(r, 600));
-      router.push('/dashboard?tab=general');
+      await new Promise(r => setTimeout(r, 500));
+
+      const u = findUserByEmail(values.email);
+      if (!u || u.password !== values.password) {
+        setErrorMsg('Credenciales inválidas. Usa alumno@gradia.edu / 12345678 o docente@gradia.edu / 12345678');
+        return;
+      }
+
+      login({ userId: u.id, role: u.role, name: u.name, email: u.email, org: u.org });
+      router.replace('/dashboard?tab=general');
     } finally {
       setLoading(false);
     }
@@ -53,7 +65,7 @@ export default function LoginPage() {
             {...register('email')}
             autoComplete="email"
             className="w-full rounded-md border px-4 py-3 text-sm bg-[var(--input)] border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-            placeholder="tu@email.com"
+            placeholder="alumno@gradia.edu o docente@gradia.edu"
           />
           {errors.email && <p className="text-xs text-red-500 mt-1">{String(errors.email.message)}</p>}
         </div>
@@ -66,7 +78,7 @@ export default function LoginPage() {
               {...register('password')}
               autoComplete="current-password"
               className="w-full rounded-md border px-4 py-3 pr-12 text-sm bg-[var(--input)] border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-              placeholder="Mínimo 8 caracteres"
+              placeholder="12345678"
             />
             <button
               type="button"
@@ -80,6 +92,12 @@ export default function LoginPage() {
           </div>
           {errors.password && <p className="text-xs text-red-500 mt-1">{String(errors.password.message)}</p>}
         </div>
+
+        {errorMsg && (
+          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            {errorMsg}
+          </div>
+        )}
 
         <div className="pt-2 flex items-center justify-between">
           <label className="inline-flex items-center gap-2 text-[13px] text-[var(--muted)]">

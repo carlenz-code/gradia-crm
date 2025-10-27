@@ -2,22 +2,26 @@
 
 import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
-
-// ✅ tipos de dominio (tus tipos reales)
 import type { Course } from '@/lib/types/course.types';
 import type { Role } from '@/lib/types';
 
-// ✅ subcomponentes locales
 import SidebarHeader from './SidebarHeader';
 import SidebarActions from './SidebarActions';
 import SidebarUnitList from './SidebarUnitList';
 import SidebarSkeleton from './SidebarSkeleton';
 
+type Variant = 'rail' | 'embedded';
+
 type Props = {
-  course?: Course;        // dominio
-  role: Role;             // 'STUDENT' | 'TEACHER'
+  course?: Course;
+  role: Role;
   exitHref?: string;
   loading?: boolean;
+  /** 
+   * 'rail'    => sidebar fijo tipo rail (sticky a la izquierda)
+   * 'embedded'=> columna dentro del grid
+   */
+  variant?: Variant;
 };
 
 export default function CourseSidebar({
@@ -25,6 +29,7 @@ export default function CourseSidebar({
   role,
   exitHref = '/dashboard/courses',
   loading,
+  variant = 'rail', // 👈 valor por defecto
 }: Props) {
   const pathname = usePathname();
   const [openUnitId, setOpenUnitId] = useState<string | null>(null);
@@ -35,11 +40,32 @@ export default function CourseSidebar({
     [openUnitId, firstUnitId]
   );
 
-  if (loading) return <SidebarSkeleton />;
+  // estilos base comunes
+  const common = 'overflow-y-auto py-4'; // sin fondo gris
+
+  // rail: sticky tomando alto de viewport menos header
+  const rail =
+    'lg:sticky lg:top-[calc(var(--header-h)-1px)] ' +
+    'lg:h-[calc(100vh-var(--header-h)+1px)] ' +
+    'lg:pr-4 lg:mr-2 lg:border-r border-[var(--border)]';
+
+  // embedded: solo separador inferior en móvil
+  const embedded = 'border-b border-[var(--border)] lg:border-b-0';
+
+  const asideClass =
+    common + ' ' + (variant === 'rail' ? rail : embedded);
+
+  if (loading) {
+    return (
+      <aside className={asideClass}>
+        <SidebarSkeleton />
+      </aside>
+    );
+  }
 
   if (!course) {
     return (
-      <aside className="lg:sticky lg:top-[calc(var(--header-h)+var(--rail-gap,8px))] lg:h-[calc(100vh-var(--header-h)-var(--rail-gap,8px))] lg:pr-4 lg:mr-2 lg:border-r lg:border-[var(--border)] overflow-y-auto">
+      <aside className={asideClass}>
         <div className="p-2 text-[13px] text-[color:var(--muted)]">
           No se encontró el curso.
         </div>
@@ -48,15 +74,16 @@ export default function CourseSidebar({
   }
 
   return (
-    <aside className="lg:sticky lg:top-[calc(var(--header-h)+var(--rail-gap,8px))] lg:h-[calc(100vh-var(--header-h)-var(--rail-gap,8px))] lg:pr-4 lg:mr-2 lg:border-r lg:border-[var(--border)] overflow-y-auto">
+    <aside className={asideClass}>
       <SidebarHeader title={course.title} exitHref={exitHref} />
       {role === 'TEACHER' && <SidebarActions />}
+
       <SidebarUnitList
-        units={course.units}          // dominio: Unit[]
+        units={course.units}
         courseId={course.id}
         pathname={pathname}
         openUnitId={effectiveOpen}
-        onToggle={(id) => setOpenUnitId(prev => (prev === id ? null : id))}
+        onToggle={(id) => setOpenUnitId((prev) => (prev === id ? null : id))}
       />
     </aside>
   );

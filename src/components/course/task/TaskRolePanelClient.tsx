@@ -1,10 +1,9 @@
-// src/components/course/task/TaskRolePanelClient.tsx
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { getCourseByIdMock } from '@/lib/services/mock/courses.mock';
 import type { Course, Task as TaskType, Material } from '@/lib/types/course.types';
-import type { TaskSubmission, TaskResource as TaskRes } from '@/lib/types/task.types';
+import type { TaskResource as TaskRes } from '@/lib/types/task.types';
 
 import TaskHeaderCard from './TaskHeaderCard';
 import TaskDescription from './pieces/TaskDescription';
@@ -16,8 +15,6 @@ import NewTaskModal from './teacher/NewTaskModal';
 import AddResourceModal from './teacher/AddResourceModal';
 
 import { getTaskResourcesMock } from '@/lib/services/mock/taskResources.mock';
-
-// Persistencia local (sin backend)
 import {
   getTaskMeta,
   setTaskDescription,
@@ -45,32 +42,29 @@ export default function TaskRolePanelClient({
   courseId: string;
   taskId: string;
 }) {
-  // ===== estado base del curso/tarea =====
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // recursos provenientes de mocks/curso
   const [taskResources, setTaskResources] = useState<Resource[]>([]);
-
-  // meta local (title, dueAt, description, resources agregados)
   const [meta, setMeta] = useState<TaskMeta>({});
   const [openAdd, setOpenAdd] = useState(false);
-
-  // Modal Nueva/Editar tarea (escuchado desde SidebarActions)
   const [openNewTask, setOpenNewTask] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | undefined>(undefined);
 
+  // 👉 NUEVO: estado del tab
+  const [tab, setTab] = useState<'task' | 'comments'>('task');
+
+  // Modal para crear tarea desde evento global
   useEffect(() => {
     const onOpen = (e: Event) => {
       const ce = e as CustomEvent<{ taskId?: string }>;
-      setEditTaskId(ce.detail?.taskId); // si llega => editar, si no => crear
+      setEditTaskId(ce.detail?.taskId);
       setOpenNewTask(true);
     };
     document.addEventListener('open-create-task', onOpen as EventListener);
     return () => document.removeEventListener('open-create-task', onOpen as EventListener);
   }, []);
 
-  // ===== cargar curso =====
+  // Cargar curso
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -79,10 +73,12 @@ export default function TaskRolePanelClient({
       setCourse(c);
       setLoading(false);
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [courseId]);
 
-  // ===== localizar módulo y tarea =====
+  // Buscar módulo y tarea
   const findModuleByTask = (c: Course | null) =>
     c?.units.find((u) => u.tasks.some((t) => t.id === taskId)) ?? null;
 
@@ -98,29 +94,22 @@ export default function TaskRolePanelClient({
     return `Módulo ${idx + 1}`;
   }, [course, modulo]);
 
-  // ===== mapear materiales del curso a "Resource" =====
-  const mapMaterialToResource = (m: Material): Resource => {
-    const lower = m.title.toLowerCase();
-    const guessed: Resource['type'] =
-      lower.includes('ipynb') || lower.includes('notebook') ? 'notebook'
-      : lower.includes('pdf') ? 'pdf'
-      : lower.includes('slide') || lower.includes('presentación') ? 'slide'
-      : m.type === 'video' ? 'video'
-      : m.type === 'pdf' ? 'pdf'
-      : m.type === 'slide' ? 'slide'
-      : m.type === 'link' ? 'link'
-      : 'document';
-    return { id: m.id, title: m.title, type: guessed, url: m.url };
-  };
+  // Mapear recursos
+  const mapMaterialToResource = (m: Material): Resource => ({
+    id: m.id,
+    title: m.title,
+    type: m.type as Resource['type'],
+    url: m.url,
+  });
 
-  const normalizeTaskResource = (r: TaskRes): Resource => {
-    const map: Record<TaskRes['type'], Resource['type']> = {
-      pdf: 'pdf', slide: 'slide', notebook: 'notebook', link: 'link', other: 'document',
-    };
-    return { id: r.id, title: r.title, type: map[r.type], url: r.url };
-  };
+  const normalizeTaskResource = (r: TaskRes): Resource => ({
+    id: r.id,
+    title: r.title,
+    type: r.type === 'other' ? 'document' : (r.type as any),
+    url: r.url,
+  });
 
-  // ===== cargar recursos por tarea (mock) =====
+  // Cargar recursos
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -132,17 +121,18 @@ export default function TaskRolePanelClient({
         setTaskResources((course?.materials ?? []).map(mapMaterialToResource));
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [taskId, course]);
 
-  // ===== cargar meta local por taskId =====
+  // Meta (localStorage)
   useEffect(() => {
     setMeta(getTaskMeta(taskId));
   }, [taskId]);
 
-  // ===== merge de recursos: primero los agregados por docente (meta), luego los base =====
   const mergedResources: Resource[] = useMemo(() => {
-    const extra = (meta.resources ?? []).map<Resource>(r => ({
+    const extra = (meta.resources ?? []).map<Resource>((r) => ({
       id: r.id,
       title: r.title,
       type: r.type,
@@ -153,58 +143,31 @@ export default function TaskRolePanelClient({
     return [...extra, ...(taskResources ?? [])];
   }, [meta.resources, taskResources]);
 
-  // ===== campos efectivos (title, dueAt, description) =====
+  // Datos efectivos
   const effectiveTitle = (meta.title ?? task?.title) ?? '';
   const effectiveDueAt = (meta.dueAt ?? task?.dueAt) ?? null;
   const effectiveDescription = (meta.description ?? (task as any)?.description) ?? '';
 
-  // ===== handlers =====
-  const onDownloadAll = (items: Resource[]) => {
-    items.forEach((r, i) => {
-      setTimeout(() => {
-        const a = document.createElement('a');
-        a.href = r.url;
-        a.download = '';
-        a.rel = 'noopener';
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }, i * 120);
-    });
-  };
-
-  const handleSubmitted = (_sub: TaskSubmission) => {};
-
+  // Handlers
   const handleSaveDescription = (next: string) => {
     const updated = setTaskDescription(taskId, next);
-    setMeta(m => ({ ...m, description: updated.description }));
+    setMeta((m) => ({ ...m, description: updated.description }));
   };
 
   const handleAddResource = (r: { title: string; type: LocalResource['type']; url: string; size?: string }) => {
     const added = addTaskResource(taskId, r);
-    setMeta(m => ({ ...m, resources: [added, ...(m.resources ?? [])] }));
+    setMeta((m) => ({ ...m, resources: [added, ...(m.resources ?? [])] }));
   };
 
   const handleRemoveResource = (id: string) => {
     const updated = removeTaskResource(taskId, id);
-    setMeta(m => ({ ...m, resources: updated.resources }));
+    setMeta((m) => ({ ...m, resources: updated.resources }));
   };
 
-  // ===== loading / guards =====
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-16 rounded-2xl border border-[var(--border)] bg-[var(--section)] animate-pulse" />
-        <div className="h-64 rounded-2xl border border-[var(--border)] animate-pulse" />
-        <div className="h-40 rounded-2xl border border-[var(--border)] animate-pulse" />
-      </div>
-    );
-  }
-  if (!course) return <div>No se encontró el curso.</div>;
-  if (!task) return <div>Tarea no encontrada.</div>;
+  if (loading) return <div className="h-48 animate-pulse bg-[var(--section)] rounded-2xl" />;
+  if (!course || !task) return <div>No se encontró la tarea.</div>;
 
-  // ===== header (usa valores efectivos y oculta nota en TEACHER dentro del componente) =====
+  // Header (vive dentro del tab "Tarea")
   const Header = (
     <TaskHeaderCard
       role={role}
@@ -215,100 +178,96 @@ export default function TaskRolePanelClient({
     />
   );
 
-  // ===== glow de fondo (mitad derecha) =====
-  const Glow = (
-    <div className="pointer-events-none absolute -z-10 top-[-160px] bottom-[-160px] left-1/2 right-[-160px]">
-      <div
-        aria-hidden
-        className="absolute left-1/2 top-[48%] -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px]"
-        style={{
-          background: `
-            radial-gradient(
-              closest-side,
-              rgb(var(--brand-rgb,139 140 251)/0.22) 0%,
-              rgb(var(--brand-rgb,139 140 251)/0.14) 36%,
-              rgb(var(--brand-rgb,139 140 251)/0.08) 56%,
-              transparent 74%
-            )
-          `,
-        }}
-      />
-    </div>
-  );
+  /** ====== RENDER ======
+   *  Barra de tabs pegada al sidebar con línea continua (border-t).
+   *  Tabs con fondo gris claro, borde gris claro, texto negro.
+   */
+  return (
+    <div className="relative z-0">
+      {/* Línea superior que conecta con el sidebar */}
+      <div className="border-t border-[var(--border)] -mt-[1px]" />
 
-  // ===== vistas por rol =====
-  if (role === 'STUDENT') {
-    return (
-      <div className="relative space-y-6 z-0">
-        {Glow}
-        {Header}
+      {/* Barra de tabs */}
+      <div className="flex items-end gap-2 pt-3">
+        <TabButton active={tab === 'task'} onClick={() => setTab('task')}>
+          Tarea
+        </TabButton>
+        <TabButton active={tab === 'comments'} onClick={() => setTab('comments')}>
+          Comentarios
+        </TabButton>
 
-        <div className="grid md:grid-cols-2 gap-5">
-          <TaskDescription
-            role={role}
-            description={effectiveDescription}
-            onViewRubric={() => alert('Rúbrica próximamente')}
-          />
-          <div className="space-y-5">
-            <TaskSubmissionBox taskId={taskId} onSubmitted={handleSubmitted} />
+        {/* línea que se extiende hasta el final para “unir” visualmente */}
+        <div className="flex-1 border-b border-[var(--border)] translate-y-[1px]" />
+      </div>
+
+      {/* Contenido del tab */}
+      {tab === 'task' ? (
+        <div className="mt-4 flex gap-6">
+          {/* Columna central */}
+          <div className="flex-1 space-y-6 pr-4">
+            {Header}
+
+            {role === 'TEACHER' && (
+              <TeacherStudentsList taskId={taskId} courseId={courseId} />
+            )}
+
+            <TaskDescription
+              role={role}
+              description={effectiveDescription}
+              onViewRubric={() => alert('Rúbrica próximamente')}
+              onSaveDescription={role === 'TEACHER' ? handleSaveDescription : undefined}
+            />
+          </div>
+
+          {/* Columna derecha */}
+          <div className="w-[280px] shrink-0 space-y-6">
+            {role === 'STUDENT' && (
+              <TaskSubmissionBox taskId={taskId} onSubmitted={() => {}} />
+            )}
+
             <TaskResources
               role={role}
               resources={mergedResources}
-              onDownloadAll={onDownloadAll}
+              onDownloadAll={(res) => {
+                res.forEach((r, i) => {
+                  setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = r.url;
+                    a.download = '';
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  }, i * 120);
+                });
+              }}
+              onAddResource={role === 'TEACHER' ? () => setOpenAdd(true) : undefined}
+              onRemoveResource={role === 'TEACHER' ? handleRemoveResource : undefined}
             />
           </div>
         </div>
+      ) : (
+        // Tab: Comentarios (solo comentarios, a ancho de contenido)
+        <div className="mt-4">
+          <TaskComments taskId={taskId} role={role} />
+        </div>
+      )}
 
-        <TaskComments taskId={taskId} role={role} />
-      </div>
-    );
-  }
-
-  // ===== TEACHER =====
-  return (
-    <div className="relative space-y-6 z-0">
-      {Glow}
-      {Header}
-
-      {/* Lista de estudiantes del docente */}
-     <TeacherStudentsList taskId={taskId} courseId={courseId} />
-
-
-      <div className="grid md:grid-cols-2 gap-5">
-        <TaskDescription
-          role={role}
-          description={effectiveDescription}
-          onViewRubric={() => alert('Rúbrica (edición docente) próximamente')}
-          onSaveDescription={handleSaveDescription}
-        />
-
-        <TaskResources
-          role={role}
-          resources={mergedResources}
-          onDownloadAll={onDownloadAll}
-          onAddResource={() => setOpenAdd(true)}
-          onRemoveResource={handleRemoveResource}
-        />
-      </div>
-
-      <TaskComments taskId={taskId} role={role} />
-
-      {/* Modal agregar recurso */}
+      {/* Modales */}
       <AddResourceModal
         open={openAdd}
         onClose={() => setOpenAdd(false)}
         onSubmit={handleAddResource}
       />
 
-      {/* Modal crear/editar tarea (escuchado desde SidebarActions) */}
       <NewTaskModal
         open={openNewTask}
         onClose={() => setOpenNewTask(false)}
         courseId={courseId}
         defaultTaskId={editTaskId}
         onSave={(res) => {
-          // Refresca meta en memoria (header/descripcion al instante)
-          setMeta(m => ({
+          setMeta((m) => ({
             ...m,
             title: res.title,
             dueAt: res.dueAt ?? undefined,
@@ -317,5 +276,32 @@ export default function TaskRolePanelClient({
         }}
       />
     </div>
+  );
+}
+
+/** Botón de tab, con estilo gris claro, borde gris, texto negro */
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={[
+        'h-10 px-4 rounded-t-xl text-[13px] font-medium',
+        'border border-b-0',
+        active
+          ? 'bg-[var(--card)] border-[var(--border)] text-black dark:text-white'
+          : 'bg-[var(--section)] border-[var(--border)] text-black/80 dark:text-white/85 hover:bg-[var(--card)]',
+      ].join(' ')}
+      style={{ transform: 'translateY(1px)' }} // hace que el borde inferior se funda con la línea
+    >
+      {children}
+    </button>
   );
 }

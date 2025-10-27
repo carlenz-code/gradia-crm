@@ -1,39 +1,51 @@
-// Pequeño directorio local de usuarios con roles y matrícula en cursos.
-
+// src/lib/services/mock/userDirectory.local.ts
 export type UserRole = 'STUDENT' | 'TEACHER';
 
 export type User = {
   id: string;
   name: string;
   role: UserRole;
-  avatarUrl?: string;       // si no hay, se muestran iniciales
-  courses: string[];        // ids de course donde está matriculado
+  avatarUrl?: string;
+  courses: string[];
+  email: string;
+  password: string;
+  org?: string;
 };
 
+// === Base de usuarios (mock) ===
 const USERS: User[] = [
-  { id: 'u-matias', name: 'Matías Flores', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'ml-102'] },
-  { id: 'u-valentina', name: 'Valentina Ruiz', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-diego', name: 'Diego Castro', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-camila', name: 'Camila Rojas', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-sofia', name: 'Sofía Herrera', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-luis', name: 'Luis Gutiérrez', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-daniela', name: 'Daniela Paredes', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-joaquin', name: 'Joaquín Torres', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-renata', name: 'Renata Vargas', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-bruno', name: 'Bruno Morales', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-lucia', name: 'Lucía Quispe', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-andres', name: 'Andrés Ponce', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-maria', name: 'María Salazar', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-thiago', name: 'Thiago Pérez', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-isabella', name: 'Isabella León', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-gael', name: 'Gael Reyes', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-antonella', name: 'Antonella Campos', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-emilio', name: 'Emilio Delgado', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-mia', name: 'Mía Fernández', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  { id: 'u-santiago', name: 'Santiago Soto', role: 'STUDENT', avatarUrl: '', courses: ['ml-101'] },
-  // Puedes agregar TEACHER si quieres listar docentes
+  // ==== ESTUDIANTES ====
+  { id: 'u-matias', name: 'Matías Flores', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'aud-sis', 'seg-inf'], email: 'alumno@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-valentina', name: 'Valentina Ruiz', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'seg-inf'], email: 'valentina@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-diego', name: 'Diego Castro', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'seg-inf'], email: 'diego@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-nicole', name: 'Nicole García', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'aud-sis', 'seg-inf'], email: 'nicole@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-carlo', name: 'Carlo Farfán', role: 'STUDENT', avatarUrl: '', courses: ['aud-sis', 'seg-inf'], email: 'carlo@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-jose', name: 'José Ramírez', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'aud-sis'], email: 'jose@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-lucia', name: 'Lucía Paredes', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'aud-sis', 'seg-inf'], email: 'lucia@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-andrea', name: 'Andrea Torres', role: 'STUDENT', avatarUrl: '', courses: ['ml-101', 'seg-inf'], email: 'andrea@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-luis', name: 'Luis Campos', role: 'STUDENT', avatarUrl: '', courses: ['aud-sis', 'seg-inf'], email: 'luis@gradia.edu', password: '12345678', org: 'UPeU' },
+
+  // ==== DOCENTES ====
+  { id: 'u-docente', name: 'María Docente', role: 'TEACHER', avatarUrl: '', courses: ['ml-101', 'seg-inf', 'aud-sis'], email: 'docente@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-docente2', name: 'Carlos Gómez', role: 'TEACHER', avatarUrl: '', courses: ['aud-sis'], email: 'carlos@gradia.edu', password: '12345678', org: 'UPeU' },
+  { id: 'u-docente3', name: 'Laura Ruiz', role: 'TEACHER', avatarUrl: '', courses: ['ml-101'], email: 'laura@gradia.edu', password: '12345678', org: 'UPeU' },
 ];
 
+// === Funciones ===
 export function getStudentsForCourse(courseId: string): User[] {
-  return USERS.filter(u => u.role === 'STUDENT' && u.courses.includes(courseId));
+  return USERS.filter((u) => u.role === 'STUDENT' && u.courses.includes(courseId));
+}
+
+export function findUserByEmail(email: string): User | null {
+  const u = USERS.find((x) => x.email.toLowerCase() === email.toLowerCase());
+  return u ?? null;
+}
+
+export function getUserById(id: string): User | null {
+  return USERS.find((u) => u.id === id) ?? null;
+}
+
+export function listCoursesForUser(userId: string): string[] {
+  const u = getUserById(userId);
+  return u?.courses ?? [];
 }
