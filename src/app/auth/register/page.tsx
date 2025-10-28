@@ -9,6 +9,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import GoogleIcon from '@/components/auth/GoogleIcon';
+import { useRegister } from '@/lib/hooks/auth/useRegister';
+import type { RegisterFormInput } from '@/lib/types/auth/user.types';
 
 type RegisterInput = { firstName: string; lastName: string; email: string; password: string };
 
@@ -20,23 +22,20 @@ const schema = z.object({
 });
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
+const [show, setShow] = useState(false);
+  // Toda la lógica ahora viene del hook
+  const { handleRegister, isLoading, error: apiError } = useRegister();
 
   const { register, handleSubmit, formState: { errors } } =
-    useForm<RegisterInput>({ resolver: zodResolver(schema), defaultValues: { firstName: '', lastName: '', email: '', password: '' } });
+    useForm<RegisterFormInput>({
+      resolver: zodResolver(schema),
+      defaultValues: { firstName: '', lastName: '', email: '', password: '' }
+    });
 
-  async function onSubmit(values: RegisterInput) {
-    setLoading(true);
-    try {
-      // TODO: integra tu useAuth().register(values)
-      await new Promise(r => setTimeout(r, 800));
-      router.push('/dashboard?tab=general');
-    } finally {
-      setLoading(false);
-    }
-  }
+  // La función onSubmit solo delega la tarea al hook
+  const onSubmit = (values: RegisterFormInput) => {
+    handleRegister(values);
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
@@ -106,10 +105,10 @@ export default function RegisterPage() {
         <motion.button
           whileTap={{ scale: 0.98 }}
           type="submit"
-          disabled={loading}
+          disabled={isLoading}
           className="w-full rounded-full py-3 text-sm font-medium bg-[var(--accent)] text-white disabled:opacity-60"
         >
-          {loading ? 'Creando cuenta…' : 'Crear cuenta'}
+          {isLoading ? 'Creando cuenta…' : 'Crear cuenta'}
         </motion.button>
 
         <div className="text-center text-[12px] text-[var(--muted)]">o registrarte con</div>
