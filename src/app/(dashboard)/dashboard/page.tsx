@@ -1,14 +1,11 @@
-// src/app/(dashboard)/dashboard/page.tsx
-import { use } from 'react';
+// ✅ FIX Next.js App Router 2025 – searchParams ya no es Promise
 import DashboardPageBridge from './DashboardPageBridge';
 
 export default function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>; // 👈 Promise
+  searchParams?: { tab?: string };
 }) {
-  const sp = use(searchParams);                         // 👈 desenvuelve
-  const tab = sp?.tab === 'vista' ? 'vista' : 'general';
-
-  return <DashboardPageBridge tab={tab} />;            // 👈 puente cliente
+  const tab = searchParams?.tab === 'vista' ? 'vista' : 'general';
+  return <DashboardPageBridge tab={tab} />;
 }

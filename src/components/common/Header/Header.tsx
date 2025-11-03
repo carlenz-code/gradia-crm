@@ -28,7 +28,7 @@ export default function Header({ user, tabs = [], onToggleSidebar }: Props) {
     >
 
       <div className="overflow-visible" style={{ transform: 'none' }}>
-        <Container className="flex h-14 md:h-16 items-center justify-between gap-4 overflow-visible">
+        <Container size="wide" className="flex h-14 md:h-16 items-center justify-between gap-4 overflow-visible">
           {/* IZQ */}
           <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
             <motion.button

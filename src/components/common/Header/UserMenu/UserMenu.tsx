@@ -38,7 +38,7 @@ export default function UserMenu({ user }: Props) {
         <MenuHeader roleLabel={isTeacher ? 'Docente' : 'Estudiante'} iconName={isTeacher ? 'teacher' : 'student'} />
 
         <ul id={`${btnId}-menu`} role="menu" aria-labelledby={btnId} className="pb-2">
-          <li><MenuLink href="/profile" onSelect={close} icon={<TagUser size={18} color="var(--icon)" />}>Perfil</MenuLink></li>
+          <li><MenuLink href="/dashboard/profile" onSelect={close} icon={<TagUser size={18} color="var(--icon)" />}>Perfil</MenuLink></li>
           {isTeacher ? (
             <li><MenuLink href="/courses" onSelect={close} icon={<Book size={18} color="var(--icon)" />}>Mis cursos</MenuLink></li>
           ) : (

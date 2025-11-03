@@ -17,7 +17,7 @@ type Props = {
   role: Role;
   exitHref?: string;
   loading?: boolean;
-  /** 
+  /**
    * 'rail'    => sidebar fijo tipo rail (sticky a la izquierda)
    * 'embedded'=> columna dentro del grid
    */
@@ -29,7 +29,7 @@ export default function CourseSidebar({
   role,
   exitHref = '/dashboard/courses',
   loading,
-  variant = 'rail', // 👈 valor por defecto
+  variant = 'rail', // valor por defecto
 }: Props) {
   const pathname = usePathname();
   const [openUnitId, setOpenUnitId] = useState<string | null>(null);
@@ -41,19 +41,20 @@ export default function CourseSidebar({
   );
 
   // estilos base comunes
-  const common = 'overflow-y-auto py-4'; // sin fondo gris
+  const common = 'overflow-y-auto py-4';
 
   // rail: sticky tomando alto de viewport menos header
   const rail =
     'lg:sticky lg:top-[calc(var(--header-h)-1px)] ' +
     'lg:h-[calc(100vh-var(--header-h)+1px)] ' +
-    'lg:pr-4 lg:mr-2 lg:border-r border-[var(--border)]';
+    // 👇 dejamos padding interno a la derecha y el borde,
+    // PERO quitamos cualquier margen externo (antes había mr-2)
+    'lg:pr-4 lg:border-r border-[var(--border)]';
 
   // embedded: solo separador inferior en móvil
   const embedded = 'border-b border-[var(--border)] lg:border-b-0';
 
-  const asideClass =
-    common + ' ' + (variant === 'rail' ? rail : embedded);
+  const asideClass = `${common} ${variant === 'rail' ? rail : embedded}`;
 
   if (loading) {
     return (

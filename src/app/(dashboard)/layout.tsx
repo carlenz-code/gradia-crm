@@ -47,7 +47,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <div className="w-full h-full">{children}</div>
           ) : (
             // resto del dashboard: usar container
-            <Container className="py-6">{children}</Container>
+            <Container size="wide" className="py-6">{children}</Container>
           )}
         </UserProvider>
       </main>

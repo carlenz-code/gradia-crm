@@ -4,6 +4,7 @@ import type { MinimalUser } from '@/lib/types';
 import { useCurrentUser } from '@/lib/auth.client';
 import StudentGeneralTab from '@/components/Tabs/StudentGeneralTab';
 import TeacherGeneralTab from '@/components/Tabs/TeacherGeneralTab';
+import VistaAmpliadaTab from '@/components/Tabs/VistaAmpliada/VistaAmpliadaTab'; // ✅ importa tu vista real
 
 export default function DashboardPageBridge({ tab }: { tab: 'general' | 'vista' }) {
   const user = useCurrentUser() as MinimalUser;
@@ -14,10 +15,6 @@ export default function DashboardPageBridge({ tab }: { tab: 'general' | 'vista' 
       : <StudentGeneralTab user={user} />;
   }
 
-  // “Vista ampliada” (WIP)
-  return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6">
-      Vista ampliada (en construcción)
-    </div>
-  );
+  // ✅ aquí sí se renderiza la vista completa
+  return <VistaAmpliadaTab />;
 }

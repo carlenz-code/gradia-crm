@@ -102,3 +102,4 @@ html, body { overflow-x: clip; }
 
 /* Evita que textos/hijos flex empujen el ancho */
 * { min-width: 0; }
+
